@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pythont3
 
 import csv
 import re
@@ -20,6 +20,8 @@ def make_combined_lookup(artist_name, recording_name):
 
 
 def get_client():
+    """ Configure the typesense client and return it """
+
     return typesense.Client({
         'nodes': [{
             'host': "localhost",
@@ -83,9 +85,11 @@ def build_index(csv_file):
         print("typesense index: Cannot build index: ", str(err))
 
 
-def lookup(query):
+def lookup(artist_name, recording_name):
+    """ Perform a lookup on the typsense index """
 
     client = get_client()
+    query = make_combined_lookup(artist_name, recording_name)
     search_parameters = {'q': query, 'query_by': "combined", 'prefix': 'no', 'num_typos': 5}
 
     hits = client.collections[TYPESENSE_COLLECTION].documents.search(search_parameters)
@@ -107,7 +111,7 @@ def lookup(query):
 def lookup_track(artist_name, recording_name):
     """ Lookup a track given the artist_name and recording_name. Print results to stdout. """
 
-    matches = lookup(make_combined_lookup(artist_name, recording_name))
+    matches = lookup(artist_name, recording_name)
     if len(matches) == 0:
         print("no canonical recording found")
     else:
