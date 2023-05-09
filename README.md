@@ -26,8 +26,8 @@ Once the index is complete you can perform metadata lookups with:
 And if everything is working, it should print the stats for the canonical track on stdout.
 
 
-Starting typsense
------------------
+Starting Typesense
+------------------
 
 To run this example as is, you will need to install Typesense ( https://typesense.org/ ). If you have docker
 installed, you could create a typesense container (without persistence!) with this command:
