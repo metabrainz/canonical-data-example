@@ -2,6 +2,7 @@
 
 import csv
 import re
+import sys
 
 import typesense
 import typesense.exceptions
@@ -17,12 +18,8 @@ def make_combined_lookup(artist_name, recording_name):
     """ Given the artist name and recording name, return a combined_lookup string """
     return unidecode(re.sub(r'[^\w]+', '', artist_name + recording_name).lower())
 
-
-def build_index(csv_file):
-    """ Import the MusicBrainz Canonical Data CSV file into typesense """
-
-    max_score = 4 * 1024 * 1024 * 1024  # a sufficiently large number
-    client = typesense.Client({
+def get_client():
+    return typesense.Client({
         'nodes': [{
             'host': "localhost",
             'port': 8108,
@@ -32,6 +29,13 @@ def build_index(csv_file):
         'connection_timeout_seconds': 1000000
     })
 
+
+
+def build_index(csv_file):
+    """ Import the MusicBrainz Canonical Data CSV file into typesense """
+
+    max_score = 4 * 1024 * 1024 * 1024  # a sufficiently large number
+    client = get_client()
     schema = {
         'name': TYPESENSE_COLLECTION,
         'fields': [
@@ -78,15 +82,37 @@ def build_index(csv_file):
     except typesense.exceptions.TypesenseClientError as err:
         print("typesense index: Cannot build index: ", str(err))
 
+def lookup(query):
+
+    client = get_client()
+    search_parameters = {
+        'q': query,
+        'query_by': "combined",
+        'prefix': 'no',
+        'num_typos': 5
+    }
+
+    hits = client.collections[TYPESENSE_COLLECTION].documents.search(search_parameters)
+
+    output = []
+    for hit in hits['hits']:
+        output.append({'artist_credit_name': hit['document']['artist_credit_name'],
+                       'artist_mbids': hit['document']['artist_mbids'],
+                       'release_name': hit['document']['release_name'],
+                       'release_mbid': hit['document']['release_mbid'],
+                       'recording_name': hit['document']['recording_name'],
+                       'recording_mbid': hit['document']['recording_mbid']})
+
+    return output
 
 def lookup_track(artist_name, recording_name):
     """ Lookup a track given the artist_name and recording_name. Print results to stdout. """
 
-    combined_lookup = make_combined_lookup(artist_name, recording_name)
-    match = datastore_lookup(combined_lookup)
-    if match is None:
+    matches = lookup(make_combined_lookup(artist_name, recording_name))
+    if len(matches) == 0:
         print("track was not found")
     else:
+        match = matches[0]
         print("track was matched:")
         print(f"  artist: {match['artist_credit_name']}")
         print(f"  release_mbid: {match['artist_mbids']}")
@@ -97,8 +123,7 @@ def lookup_track(artist_name, recording_name):
 
 
 if __name__ == "__main__":
-    print("meh")
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 3:
         print("Usage: lookup.py <artist_name> <recording_name>")
     else:
         lookup_track(sys.argv[1], sys.argv[2])
