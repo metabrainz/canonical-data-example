@@ -2,7 +2,7 @@ MusicBrainz Canonical Data Examples
 ===================================
 
 This simple example shows how to lookup music metadata using the MusicBrainz canonical dataset. For more details,
-please see this [how-to-build-your-own-music-tagger-with-musicbrainz-canonical-metadata](https://blog.metabrainz.org/?p=10350).
+please see our blog post [How to build your own tagger, with MusicBrainz Canonical Metadata](https://blog.metabrainz.org/?p=10350).
 
 You'll need to download the https://metabrainz.org/datasets/derived-dumps#canonical dataset and extract the
 file canonical_musicbrainz_data.csv and store it in top level directory of this repo.
