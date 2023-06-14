@@ -25,6 +25,21 @@ Once the index is complete you can perform metadata lookups with:
 
 And if everything is working, it should print the stats for the canonical track on stdout.
 
+Getting More Accurate
+---------------------
+
+For some users the canonical recording isn't going to be good enough, so another step can be added to make it more precise.
+Once a recording_mbid has been found, another lookup at the MusicBrainz API could be done. Assume that recording
+d789aeeb-2b98-4430-8aa4-356c954b794f was returned as the canonical recording. Then you can make the following query to:
+
+```
+https://musicbrainz.org/ws/2/recording/d789aeeb-2b98-4430-8aa4-356c954b794f?fmt=json&inc=releases
+```
+
+Which will return the releases that this track appears on and you can choose the correct release. There are many
+other steps that can be taken to further refine which recordign to tag your track as -- you can use the data returned
+from this call to query other bits of data to find the correct recording.
+
 
 Starting Typesense
 ------------------
